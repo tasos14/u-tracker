@@ -33,10 +33,6 @@ function WaterIntake() {
         getData(selectedFilter);
     }, [selectedFilter, getData]);
 
-    const openModal = () => {
-        router.navigate('/newWaterIntake');
-    };
-
     return (
         <View style={styles.wrapper}>
             <ScrollView horizontal style={styles.optionsWrapper}>
@@ -52,11 +48,16 @@ function WaterIntake() {
             <ScrollView>
                 <View style={styles.wrapper}>
                     {waterIntakes.map((intake) => (
-                        <ListItem key={intake.id} title={intake.amount} timestamp={intake.timestamp} />
+                        <ListItem
+                            key={intake.id}
+                            title={intake.amount}
+                            timestamp={intake.timestamp}
+                            onPress={() => router.navigate(`/editWaterIntake?id=${intake.id}`)}
+                        />
                     ))}
                 </View>
             </ScrollView>
-            <FloatingAction handlePress={openModal} />
+            <FloatingAction handlePress={() => router.navigate('/newWaterIntake')} />
         </View>
     );
 }

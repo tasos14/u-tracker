@@ -101,10 +101,72 @@ export function getUrineOutputs(timeFilter: string = 'today', typeFilter: string
     return result;
 }
 
+export function getWaterIntakeById(id: string): WaterIntake | null {
+    let result: WaterIntake | null = null;
+    const db = Database.getInstance();
+    db.withTransactionSync(() => {
+        result = db.getFirstSync<WaterIntake>(`SELECT * FROM waterIntake WHERE id = ?`, id);
+    });
+    return result;
+}
+
+export function updateWaterIntake({ id, amount, timestamp }: { id: string; amount: number; timestamp: string }): void {
+    const db = Database.getInstance();
+    db.withTransactionSync(() => {
+        db.runSync('UPDATE waterIntake SET amount = ?, timestamp = ? WHERE id = ?', amount, timestamp, id);
+    });
+}
+
+export function deleteWaterIntake(id: string): void {
+    const db = Database.getInstance();
+    db.withTransactionSync(() => {
+        db.runSync('DELETE FROM waterIntake WHERE id = ?', id);
+    });
+}
+
 export function createWaterIntake({ amount, timestamp }: { amount: number; timestamp: string }): void {
     const db = Database.getInstance();
     db.withTransactionSync(() => {
         db.runSync('INSERT INTO waterIntake (amount, timestamp) VALUES (?, ?)', amount, timestamp);
+    });
+}
+
+export function getUrineOutputById(id: string): UrineOutput | null {
+    let result: UrineOutput | null = null;
+    const db = Database.getInstance();
+    db.withTransactionSync(() => {
+        result = db.getFirstSync<UrineOutput>(`SELECT * FROM urineOutput WHERE id = ?`, id);
+    });
+    return result;
+}
+
+export function updateUrineOutput({
+    id,
+    urineLossAmount,
+    catheterizedAmount,
+    timestamp,
+}: {
+    id: string;
+    urineLossAmount: number;
+    catheterizedAmount: number;
+    timestamp: string;
+}): void {
+    const db = Database.getInstance();
+    db.withTransactionSync(() => {
+        db.runSync(
+            'UPDATE urineOutput SET urineLossAmount = ?, catheterizedAmount = ?, timestamp = ? WHERE id = ?',
+            urineLossAmount,
+            catheterizedAmount,
+            timestamp,
+            id
+        );
+    });
+}
+
+export function deleteUrineOutput(id: string): void {
+    const db = Database.getInstance();
+    db.withTransactionSync(() => {
+        db.runSync('DELETE FROM urineOutput WHERE id = ?', id);
     });
 }
 

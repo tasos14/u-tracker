@@ -3,27 +3,29 @@ import { Pressable, StyleSheet, TextInput, useColorScheme, View } from 'react-na
 import DateTimePicker from '@react-native-community/datetimepicker';
 import { Theme } from '@/constants/theme';
 
-function DateInput({ onChange }: { onChange: (date: Date) => void }): ReactElement {
-    const [date, setDate] = useState(new Date());
-    const [time, setTime] = useState(new Date());
+function DateInput({ value, onChange }: { value?: Date; onChange: (date: Date) => void }): ReactElement {
+    const [date, setDate] = useState(value ? value : new Date());
+    const [time, setTime] = useState(value ? value : new Date());
     const [showDate, setShowDate] = useState(false);
     const [showTime, setShowTime] = useState(false);
-    const [combinedDate, setCombinedDate] = useState(new Date());
+    const [combinedDate, setCombinedDate] = useState<Date | undefined>();
     const colorScheme = useColorScheme() || 'light';
     const color = Theme[colorScheme].colors.text;
     const backgroundColor = Theme[colorScheme].colors.primary5;
 
     useEffect(() => {
-        onChange(combinedDate);
+        if (value) {
+            setDate(value);
+            setTime(value);
+            setCombinedDate(value);
+        }
+    }, [value]);
+
+    useEffect(() => {
+        if (combinedDate) {
+            onChange(combinedDate);
+        }
     }, [combinedDate, onChange]);
-
-    const toggleDatePicker = () => {
-        setShowDate(true);
-    };
-
-    const toggleTimePicker = () => {
-        setShowTime(true);
-    };
 
     const onDateChange = ({ type }: { type: string }, selectedDate: Date | undefined) => {
         if (type === 'set' && selectedDate) {
@@ -59,7 +61,7 @@ function DateInput({ onChange }: { onChange: (date: Date) => void }): ReactEleme
         <View style={styles.dateWrapper}>
             {!showDate && !showTime && (
                 <View style={styles.inputWrapper}>
-                    <Pressable onPress={toggleDatePicker}>
+                    <Pressable onPress={() => setShowDate(true)}>
                         <TextInput
                             style={[styles.input, { color, borderColor: backgroundColor }]}
                             value={date.toDateString()}
@@ -71,14 +73,17 @@ function DateInput({ onChange }: { onChange: (date: Date) => void }): ReactEleme
 
             {!showDate && !showTime && (
                 <View style={styles.inputWrapper}>
-                    <Pressable onPress={toggleTimePicker}>
+                    <Pressable onPress={() => setShowTime(true)}>
                         <TextInput
                             style={[styles.input, { color, borderColor: backgroundColor }]}
-                            value={time.toLocaleTimeString([], {
-                                hour: '2-digit',
-                                minute: '2-digit',
-                                hour12: false,
-                            })}
+                            value={
+                                time &&
+                                time.toLocaleTimeString([], {
+                                    hour: '2-digit',
+                                    minute: '2-digit',
+                                    hour12: false,
+                                })
+                            }
                             editable={false}
                         />
                     </Pressable>

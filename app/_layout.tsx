@@ -15,8 +15,16 @@ export default function RootLayout() {
                     options={{ title: 'New Water Intake', contentStyle: styles.wrapper }}
                 />
                 <Stack.Screen
+                    name="editWaterIntake"
+                    options={{ title: 'Edit Water Intake', contentStyle: styles.wrapper }}
+                />
+                <Stack.Screen
                     name="newUrineOutput"
                     options={{ title: 'New Urine Output', contentStyle: styles.wrapper }}
+                />
+                <Stack.Screen
+                    name="editUrineOutput"
+                    options={{ title: 'Edit Urine Output', contentStyle: styles.wrapper }}
                 />
                 <Stack.Screen name="settings" options={{ title: 'Settings', contentStyle: styles.wrapper }} />
             </Stack>

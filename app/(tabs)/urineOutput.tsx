@@ -39,9 +39,6 @@ function UineOutput() {
         getData(selectedTimeFilter, selectedTypeFilter);
     }, [selectedTimeFilter, selectedTypeFilter, getData]);
 
-    const openModal = () => {
-        router.navigate('/newUrineOutput');
-    };
 
     return (
         <View style={styles.wrapper}>
@@ -76,12 +73,13 @@ function UineOutput() {
                                     : output.urineLossAmount
                             }
                             timestamp={output.timestamp}
+                            onPress={() => router.navigate(`/editUrineOutput?id=${output.id}`)}
                         />
                     ))}
                 </View>
             </ScrollView>
 
-            <FloatingAction handlePress={openModal} />
+            <FloatingAction handlePress={() => router.navigate('/newUrineOutput')} />
         </View>
     );
 }
