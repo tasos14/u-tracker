@@ -4,12 +4,9 @@
  */
 import { DarkTheme, DefaultTheme } from '@react-navigation/native';
 
-const tintColorLight = '#0a7ea4';
-const tintColorDark = '#fff';
-
 export const Theme = {
     light: {
-        light: true,
+        dark: false,
         colors: {
             ...DefaultTheme.colors,
             primary: '#e0e0e0',
@@ -23,7 +20,6 @@ export const Theme = {
             notification: '#ff4e25',
         },
         fonts: DefaultTheme.fonts,
-        tabIconSelected: tintColorLight,
     },
     dark: {
         dark: true,
@@ -40,12 +36,6 @@ export const Theme = {
             notification: '#ff4e25',
         },
         fonts: DarkTheme.fonts,
-        text: '#ECEDEE',
-        background: '#20202a',
-        tint: tintColorDark,
-        icon: '#9BA1A6',
-        tabIconDefault: '#9BA1A6',
-        tabIconSelected: tintColorDark,
     },
 };
 
