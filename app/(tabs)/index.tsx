@@ -1,74 +1,111 @@
-import { Image, StyleSheet, Platform } from 'react-native';
+import ChartHeader from '@/components/ChartHeader';
+import { Theme } from '@/constants/theme';
+import { getChartData, getDailySummary } from '@/db/db';
+import { useFocusEffect } from 'expo-router';
+import { useCallback, useState } from 'react';
+import { StyleSheet, Text, useColorScheme, View } from 'react-native';
+import { BarChart } from 'react-native-gifted-charts';
 
-import { HelloWave } from '@/components/HelloWave';
-import ParallaxScrollView from '@/components/ParallaxScrollView';
-import { ThemedText } from '@/components/ThemedText';
-import { ThemedView } from '@/components/ThemedView';
+export default function Index() {
+    const [dailySummary, setDailySummary] = useState({ waterIntake: 0, urineLoss: 0, catheterized: 0 });
+    const [chartData, setChartData] = useState<{ value: number; label: string; frontColor: string }[]>([]);
+    const colorScheme = useColorScheme() || 'light';
 
-export default function HomeScreen() {
-  return (
-    <ParallaxScrollView
-      headerBackgroundColor={{ light: '#A1CEDC', dark: '#1D3D47' }}
-      headerImage={
-        <Image
-          source={require('@/assets/images/partial-react-logo.png')}
-          style={styles.reactLogo}
-        />
-      }>
-      <ThemedView style={styles.titleContainer}>
-        <ThemedText type="title">Welcome!</ThemedText>
-        <HelloWave />
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <ThemedText type="subtitle">Step 1: Try it</ThemedText>
-        <ThemedText>
-          Edit <ThemedText type="defaultSemiBold">app/(tabs)/index.tsx</ThemedText> to see changes.
-          Press{' '}
-          <ThemedText type="defaultSemiBold">
-            {Platform.select({
-              ios: 'cmd + d',
-              android: 'cmd + m',
-              web: 'F12'
-            })}
-          </ThemedText>{' '}
-          to open developer tools.
-        </ThemedText>
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <ThemedText type="subtitle">Step 2: Explore</ThemedText>
-        <ThemedText>
-          Tap the Explore tab to learn more about what's included in this starter app.
-        </ThemedText>
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <ThemedText type="subtitle">Step 3: Get a fresh start</ThemedText>
-        <ThemedText>
-          When you're ready, run{' '}
-          <ThemedText type="defaultSemiBold">npm run reset-project</ThemedText> to get a fresh{' '}
-          <ThemedText type="defaultSemiBold">app</ThemedText> directory. This will move the current{' '}
-          <ThemedText type="defaultSemiBold">app</ThemedText> to{' '}
-          <ThemedText type="defaultSemiBold">app-example</ThemedText>.
-        </ThemedText>
-      </ThemedView>
-    </ParallaxScrollView>
-  );
+    const color = Theme[colorScheme].colors.text;
+    const backgroundColor = Theme[colorScheme].colors.surface1;
+
+    useFocusEffect(
+        useCallback(() => {
+            const summary = getDailySummary();
+            setDailySummary(summary);
+            const chartData = getChartData();
+            setChartData(chartData);
+        }, [])
+    );
+
+    return (
+        <View>
+            <Text style={[styles.sectionTitle, { color }]}>Daily Summary</Text>
+            <View style={[styles.totalCard, { backgroundColor }]}>
+                <Text style={[styles.totalValue, { color }]}>{dailySummary.waterIntake} ml</Text>
+                <Text style={[styles.totalTitle, { color }]}>Daily Water Intake</Text>
+            </View>
+            <View style={[styles.totalCard, { backgroundColor }]}>
+                <Text style={[styles.totalValue, { color }]}>{dailySummary.urineLoss} ml</Text>
+                <Text style={[styles.totalTitle, { color }]}>Daily Urine Loss</Text>
+            </View>
+            <View style={[styles.totalCard, { backgroundColor }]}>
+                <Text style={[styles.totalValue, { color }]}>{dailySummary.catheterized} ml</Text>
+                <Text style={[styles.totalTitle, { color }]}>Daily Catheterized</Text>
+            </View>
+
+            <Text style={[styles.sectionTitle, { color }]}>Daily Summary Chart</Text>
+            <View style={[styles.chartContainer, { backgroundColor }]}>
+                <ChartHeader />
+                <BarChart
+                    data={chartData}
+                    isAnimated
+                    roundedTop
+                    showVerticalLines
+                    verticalLinesColor="rgba(211, 211, 211, 0.1)"
+                    rulesColor="rgba(211, 211, 211, 0.1)"
+                    rulesType="solid"
+                    showGradient
+                    stepValue={100}
+                    noOfSections={10}
+                    barWidth={10}
+                    labelWidth={35}
+                    yAxisThickness={0}
+                    xAxisThickness={0}
+                    yAxisTextStyle={{ color }}
+                    xAxisLabelTextStyle={{ color, transform: 'rotate(50deg)' }}
+                />
+            </View>
+        </View>
+    );
 }
 
 const styles = StyleSheet.create({
-  titleContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-  },
-  stepContainer: {
-    gap: 8,
-    marginBottom: 8,
-  },
-  reactLogo: {
-    height: 178,
-    width: 290,
-    bottom: 0,
-    left: 0,
-    position: 'absolute',
-  },
+    sectionTitle: {
+        fontSize: 16,
+        marginBottom: 10,
+    },
+    totalTitle: {
+        fontSize: 16,
+    },
+    totalValue: {
+        marginBottom: 5,
+        fontSize: 20,
+        fontWeight: 'bold',
+    },
+    totalCard: {
+        borderRadius: 10,
+        padding: 10,
+        marginBottom: 10,
+    },
+    chartContainer: {
+        borderRadius: 10,
+        padding: 10,
+        paddingBottom: 20,
+        paddingTop: 20,
+    },
+    chartHeaderWrapper: {
+        flexDirection: 'row',
+        justifyContent: 'center',
+        alignItems: 'center',
+    },
+    chartDetail: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        marginRight: 10,
+    },
+    dot: {
+        height: 12,
+        width: 12,
+        borderRadius: 6,
+        marginRight: 8,
+    },
+    chartItemType: {
+        color: 'lightgray',
+    },
 });
