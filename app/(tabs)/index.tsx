@@ -5,13 +5,14 @@ import { Ionicons } from '@expo/vector-icons';
 import { addDays, format, subDays } from 'date-fns';
 import { useFocusEffect } from 'expo-router';
 import { useCallback, useEffect, useState } from 'react';
-import { Pressable, StyleSheet, Text, useColorScheme, View } from 'react-native';
-import { BarChart } from 'react-native-gifted-charts';
+import { Pressable, ScrollView, StyleSheet, Text, useColorScheme, View } from 'react-native';
+import { BarChart, PieChart } from 'react-native-gifted-charts';
 import DateTimePicker from '@react-native-community/datetimepicker';
 
 export default function Index() {
     const [dailySummary, setDailySummary] = useState({ waterIntake: 0, urineLoss: 0, catheterized: 0 });
     const [chartData, setChartData] = useState<{ value: number; label: string; frontColor: string }[]>([]);
+    const [totalChartData, setTotalChartData] = useState<{ value: number; label: string; frontColor: string }[]>([]);
     const [date, setDate] = useState(new Date());
     const [showDate, setShowDate] = useState(false);
     const colorScheme = useColorScheme() || 'light';
@@ -22,8 +23,9 @@ export default function Index() {
     const getData = useCallback((date: Date) => {
         const summary = getDailySummary(date);
         setDailySummary(summary);
-        const chartData = getChartData(date);
+        const { chartData, totalChartData } = getChartData(date);
         setChartData(chartData);
+        setTotalChartData(totalChartData);
     }, []);
     useFocusEffect(
         useCallback(() => {
@@ -43,18 +45,18 @@ export default function Index() {
         setDate((prevDate) => addDays(prevDate, 1));
     };
 
-    const onDateChange = (event: any, selectedDate: Date | undefined) => {
-        if (event === 'set' && selectedDate) {
+    const onDateChange = ({ type }: any, selectedDate: Date | undefined) => {
+        if (type === 'set' && selectedDate) {
             setDate(selectedDate);
         }
         setShowDate(false);
     };
 
     return (
-        <View>
+        <ScrollView>
             <View style={styles.dateWrapper}>
                 <Pressable onPress={handlePreviousDay}>
-                    <Ionicons name="arrow-back" size={24} color={color} />
+                    <Ionicons name="arrow-back" size={28} color={color} />
                 </Pressable>
 
                 <Pressable onPress={() => setShowDate(true)}>
@@ -63,7 +65,7 @@ export default function Index() {
                 {showDate && <DateTimePicker mode="date" value={date} onChange={onDateChange} />}
 
                 <Pressable onPress={handleNextDay}>
-                    <Ionicons name="arrow-forward" size={24} color={color} />
+                    <Ionicons name="arrow-forward" size={28} color={color} />
                 </Pressable>
             </View>
 
@@ -97,13 +99,48 @@ export default function Index() {
                     noOfSections={8}
                     barWidth={10}
                     labelWidth={35}
-                    yAxisThickness={0}
-                    xAxisThickness={0}
+                    xAxisColor={color}
+                    yAxisColor={color}
                     yAxisTextStyle={{ color }}
-                    xAxisLabelTextStyle={{ color, transform: 'rotate(50deg)' }}
+                    xAxisLabelTextStyle={{
+                        color,
+                        transform: chartData.length > 0 ? 'rotate(50deg) translate(5px, 5px)' : null,
+                    }}
                 />
             </View>
-        </View>
+            <View style={[styles.chartContainer, { backgroundColor }]}>
+                <ChartHeader />
+                <View style={styles.doubleChartContainer}>
+                    <View style={styles.chartWrapper}>
+                        <BarChart
+                            data={totalChartData}
+                            isAnimated
+                            roundedTop
+                            showVerticalLines
+                            verticalLinesColor="rgba(211, 211, 211, 0.1)"
+                            rulesColor="rgba(211, 211, 211, 0.1)"
+                            rulesType="solid"
+                            showGradient
+                            stepValue={250}
+                            noOfSections={8}
+                            barWidth={10}
+                            labelWidth={10}
+                            yAxisLabelWidth={40}
+                            xAxisColor={color}
+                            yAxisColor={color}
+                            yAxisTextStyle={{ color }}
+                            xAxisLabelTextStyle={{ color }}
+                        />
+                    </View>
+                    <View style={styles.chartWrapper}>
+                        <PieChart
+                            radius={80}
+                            data={totalChartData.map((item) => ({ value: item.value, color: item.frontColor }))}
+                        />
+                    </View>
+                </View>
+            </View>
+        </ScrollView>
     );
 }
 
@@ -115,7 +152,7 @@ const styles = StyleSheet.create({
         padding: 10,
     },
     dateText: {
-        fontSize: 18,
+        fontSize: 24,
         fontWeight: 'bold',
     },
     sectionTitle: {
@@ -140,6 +177,7 @@ const styles = StyleSheet.create({
         padding: 10,
         paddingBottom: 20,
         paddingTop: 20,
+        marginBottom: 10,
     },
     chartHeaderWrapper: {
         flexDirection: 'row',
@@ -157,7 +195,12 @@ const styles = StyleSheet.create({
         borderRadius: 6,
         marginRight: 8,
     },
-    chartItemType: {
-        color: 'lightgray',
+    doubleChartContainer: {
+        flexDirection: 'row',
+    },
+    chartWrapper: {
+        width: '50%',
+        justifyContent: 'center',
+        alignItems: 'center',
     },
 });

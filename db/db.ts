@@ -241,7 +241,10 @@ function getGradientColor(type: string): string {
     }
 }
 
-export function getChartData(date: Date): { value: number; label: string; frontColor: string }[] {
+export function getChartData(date: Date): {
+    chartData: { value: number; label: string; frontColor: string }[];
+    totalChartData: { value: number; label: string; frontColor: string }[];
+} {
     const db = Database.getInstance();
     let waterIntake: { amount: number; timestamp: string }[] = [];
     let urineLoss: { amount: number; timestamp: string }[] = [];
@@ -263,8 +266,29 @@ export function getChartData(date: Date): { value: number; label: string; frontC
         );
     });
 
+    const totalChartData = [
+        {
+            value: waterIntake.reduce((acc, curr) => acc + curr.amount, 0) || 1,
+            label: '',
+            frontColor: getFontColor('waterIntake'),
+            gadientColor: getFontColor('waterIntake'),
+        },
+        {
+            value: urineLoss.reduce((acc, curr) => acc + curr.amount, 0) || 1,
+            label: '',
+            frontColor: getFontColor('urineLoss'),
+            gadientColor: getFontColor('urineLoss'),
+        },
+        {
+            value: catheterized.reduce((acc, curr) => acc + curr.amount, 0) || 1,
+            label: '',
+            frontColor: getFontColor('catheterized'),
+            gadientColor: getFontColor('catheterized'),
+        },
+    ];
+
     // combine the data into a single array of objects ordered by timestamp ascending, add a type property
-    const result = [
+    const chartData = [
         ...waterIntake.map((intake) => ({ ...intake, type: 'waterIntake' })),
         ...urineLoss.map((loss) => ({ ...loss, type: 'urineLoss' })),
         ...catheterized.map((cath) => ({ ...cath, type: 'catheterized' })),
@@ -277,7 +301,7 @@ export function getChartData(date: Date): { value: number; label: string; frontC
             gradientColor: getGradientColor(item.type),
         }));
 
-    return result;
+    return { chartData, totalChartData };
 }
 
 // Export the singleton instance
