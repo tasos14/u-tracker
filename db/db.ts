@@ -1,5 +1,5 @@
 import { UrineOutput, WaterIntake } from '@/db/types';
-import { format } from 'date-fns';
+import { format, formatDate } from 'date-fns';
 import * as SQLite from 'expo-sqlite';
 
 class Database {
@@ -190,22 +190,26 @@ export function createUrineOutput({
     });
 }
 
-export function getDailySummary(): { waterIntake: number; urineLoss: number; catheterized: number } {
+export function getDailySummary(date: Date): { waterIntake: number; urineLoss: number; catheterized: number } {
     const db = Database.getInstance();
     let result = { waterIntake: 0, urineLoss: 0, catheterized: 0 };
-    // get the sum of all waterIntake, urineLoss, and catheterized for the day
+    const formattedDate = format(date, 'yyyy-MM-dd');
+
     db.withTransactionSync(() => {
         result.waterIntake =
             db.getFirstSync<{ totalAmount: number }>(
-                `select sum(amount) as totalAmount from waterIntake where timestamp >= CURRENT_DATE`
+                `select sum(amount) as totalAmount from waterIntake where DATE(timestamp) = ?`,
+                formattedDate
             )?.totalAmount || 0;
         result.urineLoss =
             db.getFirstSync<{ totalLoss: number }>(
-                `select sum(urineLossAmount) as totalLoss from urineOutput where timestamp >= CURRENT_DATE`
+                `select sum(urineLossAmount) as totalLoss from urineOutput where DATE(timestamp) = ?`,
+                formattedDate
             )?.totalLoss || 0;
         result.catheterized =
             db.getFirstSync<{ totalCatheterized: number }>(
-                `select sum(catheterizedAmount) as totalCatheterized from urineOutput where timestamp >= CURRENT_DATE`
+                `select sum(catheterizedAmount) as totalCatheterized from urineOutput where DATE(timestamp) = ?`,
+                formattedDate
             )?.totalCatheterized || 0;
     });
     return result;
@@ -237,20 +241,25 @@ function getGradientColor(type: string): string {
     }
 }
 
-export function getChartData(): { value: number; label: string; frontColor: string }[] {
+export function getChartData(date: Date): { value: number; label: string; frontColor: string }[] {
     const db = Database.getInstance();
     let waterIntake: { amount: number; timestamp: string }[] = [];
     let urineLoss: { amount: number; timestamp: string }[] = [];
     let catheterized: { amount: number; timestamp: string }[] = [];
+    const formattedDate = formatDate(date, 'yyyy-MM-dd');
+
     db.withTransactionSync(() => {
         waterIntake = db.getAllSync<{ timestamp: string; amount: number }>(
-            `select timestamp, amount from waterIntake where timestamp >= CURRENT_DATE`
+            `select timestamp, amount from waterIntake where Date(timestamp) = ?`,
+            formattedDate
         );
         urineLoss = db.getAllSync<{ timestamp: string; amount: number }>(
-            `select timestamp, urineLossAmount as amount from urineOutput where urineLossAmount > 0 and timestamp >= CURRENT_DATE`
+            `select timestamp, urineLossAmount as amount from urineOutput where urineLossAmount > 0 and Date(timestamp) = ?`,
+            formattedDate
         );
         catheterized = db.getAllSync<{ timestamp: string; amount: number }>(
-            `select timestamp, catheterizedAmount as amount from urineOutput where catheterizedAmount > 0 and timestamp >= CURRENT_DATE`
+            `select timestamp, catheterizedAmount as amount from urineOutput where catheterizedAmount > 0 and Date(timestamp) = ?`,
+            formattedDate
         );
     });
 
