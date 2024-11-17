@@ -1,5 +1,9 @@
 import { UrineOutput, WaterIntake } from '@/db/types';
 import { format, formatDate } from 'date-fns';
+import Papa from 'papaparse';
+import * as FileSystem from 'expo-file-system';
+import * as Sharing from 'expo-sharing';
+import * as DocumentPicker from 'expo-document-picker';
 import * as SQLite from 'expo-sqlite';
 
 class Database {
@@ -38,6 +42,70 @@ class Database {
             });
         }
         return Database.instance;
+    }
+}
+
+export async function exportDatabaseToCSV(): Promise<void> {
+    const db = Database.getInstance();
+
+    // Fetch data from the database
+    const urineOutputs = db.getAllSync<UrineOutput>('SELECT * FROM urineOutput');
+    const waterIntakes = db.getAllSync<WaterIntake>('SELECT * FROM waterIntake');
+
+    // Convert data to CSV format using PapaParse
+    const urineOutputsCSV = Papa.unparse(urineOutputs);
+    const waterIntakesCSV = Papa.unparse(waterIntakes);
+
+    // Combine CSV data
+    const csvData = `Urine Outputs\n${urineOutputsCSV}\n\nWater Intakes\n${waterIntakesCSV}`;
+
+    // Save CSV data to a file
+    const csvPath = `${FileSystem.documentDirectory}data_backup.csv`;
+    await FileSystem.writeAsStringAsync(csvPath, csvData);
+
+    // Share the CSV file
+    await Sharing.shareAsync(csvPath, {
+        mimeType: 'text/csv',
+        dialogTitle: 'Share CSV Backup',
+    });
+}
+
+export async function importDatabaseFromCSV(): Promise<void> {
+    const { assets } = await DocumentPicker.getDocumentAsync();
+
+    if (assets !== null) {
+        const csvData = await FileSystem.readAsStringAsync(assets[0].uri);
+
+        // Split the CSV data into sections
+        const [urineOutputsSection, waterIntakesSection] = csvData.split('\n\n');
+
+        const urineOutputs = Papa.parse(urineOutputsSection.split('\n').slice(1).join('\n'), { header: true }).data;
+        const waterIntakes = Papa.parse(waterIntakesSection.split('\n').slice(1).join('\n'), { header: true }).data;
+
+        const db = Database.getInstance();
+        db.withTransactionSync(() => {
+            urineOutputs.forEach((row: any) => {
+                db.runSync(
+                    'INSERT OR REPLACE INTO urineOutput (urineLossAmount, catheterizedAmount, timestamp) VALUES (?, ?, ?, ?)',
+                    row.id,
+                    row.urineLossAmount,
+                    row.catheterizedAmount,
+                    row.timestamp
+                );
+            });
+            waterIntakes.forEach((row: any) => {
+                db.runSync(
+                    'INSERT OR REPLACE INTO waterIntake (amount, timestamp) VALUES (?, ?, ?)',
+                    row.id,
+                    row.amount,
+                    row.timestamp
+                );
+            });
+        });
+
+        // Reinitialize the database to apply the imported data
+        // Database.getInstance().close();
+        // Database.initialize();
     }
 }
 
