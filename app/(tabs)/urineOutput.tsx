@@ -2,10 +2,11 @@ import FloatingAction from '@/components/FloatingAction';
 import ListItem from '@/components/ListItem';
 import Pill from '@/components/Pill';
 import { getUrineOutputs } from '@/db/db';
-import { UrineOutput } from '@/db/types';
+import { UrineOutput as UrineOutputType } from '@/db/types';
+import { format } from 'date-fns';
 import { router, useFocusEffect } from 'expo-router';
 import { useCallback, useEffect, useState } from 'react';
-import { ScrollView, StyleSheet, View } from 'react-native';
+import { ScrollView, SectionList, StyleSheet, Text, View } from 'react-native';
 
 const timeFilterOptions = [
     { value: 'today', label: 'Today' },
@@ -19,14 +20,28 @@ const typeFilterOptions = [
     { value: 'urineLoss', label: 'Urine Loss' },
 ];
 
-function UineOutput() {
-    const [urineOutputs, setUrineOutputs] = useState<UrineOutput[]>([]);
+function UrineOutput() {
+    const [groupedUrineOutputs, setGroupedUrineOutputs] = useState<{ date: string; data: UrineOutputType[] }[]>([]);
     const [selectedTimeFilter, setSelectedTimeFilter] = useState('today');
     const [selectedTypeFilter, setSelectedTypeFilter] = useState('catheterized');
 
     const getData = useCallback((timeFilter: string, typeFilter: string) => {
         const data = getUrineOutputs(timeFilter, typeFilter);
-        setUrineOutputs(data);
+        const groupedData = data.reduce((acc, output) => {
+            const date = format(output.timestamp, 'iii dd');
+            if (!acc[date]) {
+                acc[date] = [];
+            }
+            acc[date].push(output);
+            return acc;
+        }, {} as { [key: string]: UrineOutputType[] });
+
+        setGroupedUrineOutputs(
+            Object.keys(groupedData).map((date) => ({
+                date,
+                data: groupedData[date],
+            }))
+        );
     }, []);
 
     useFocusEffect(
@@ -38,7 +53,6 @@ function UineOutput() {
     useEffect(() => {
         getData(selectedTimeFilter, selectedTypeFilter);
     }, [selectedTimeFilter, selectedTypeFilter, getData]);
-
 
     return (
         <View style={styles.wrapper}>
@@ -62,23 +76,37 @@ function UineOutput() {
                     />
                 ))}
             </ScrollView>
-            <ScrollView>
-                <View style={styles.wrapper}>
-                    {urineOutputs.map((output) => (
+            <SectionList
+                sections={groupedUrineOutputs}
+                keyExtractor={(item, i) => i.toString()}
+                renderItem={({ item, index, section }) => (
+                    <View
+                        style={[
+                            styles.itemContainer,
+                            {
+                                marginLeft: selectedTimeFilter !== 'today' ? 90 : 0,
+                                marginBottom: index === section.data.length - 1 ? 0 : 10,
+                            },
+                        ]}
+                    >
                         <ListItem
-                            key={output.id}
                             title={
-                                selectedTypeFilter === 'catheterized'
-                                    ? output.catheterizedAmount
-                                    : output.urineLossAmount
+                                selectedTypeFilter === 'catheterized' ? item.catheterizedAmount : item.urineLossAmount
                             }
-                            timestamp={output.timestamp}
-                            onPress={() => router.navigate(`/editUrineOutput?id=${output.id}`)}
+                            timestamp={item.timestamp}
+                            onPress={() => router.navigate(`/editUrineOutput?id=${item.id}`)}
                         />
-                    ))}
-                </View>
-            </ScrollView>
-
+                    </View>
+                )}
+                renderSectionHeader={({ section: { date } }) =>
+                    selectedTimeFilter !== 'today' ? (
+                        <View style={styles.dateHeader}>
+                            <Text style={styles.dateText}>{date}</Text>
+                        </View>
+                    ) : null
+                }
+                stickySectionHeadersEnabled
+            />
             <FloatingAction handlePress={() => router.navigate('/newUrineOutput')} />
         </View>
     );
@@ -88,6 +116,18 @@ const styles = StyleSheet.create({
     wrapper: {
         position: 'relative',
         flex: 1,
+    },
+    itemContainer: {
+        marginBottom: 10,
+    },
+    dateHeader: {
+        width: 90,
+    },
+    dateText: {
+        fontSize: 18,
+        fontWeight: 'bold',
+        color: '#fff',
+        marginRight: 10,
     },
     button: {
         padding: 10,
@@ -107,4 +147,4 @@ const styles = StyleSheet.create({
     },
 });
 
-export default UineOutput;
+export default UrineOutput;

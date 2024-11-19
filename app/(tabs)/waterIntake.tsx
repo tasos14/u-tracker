@@ -3,9 +3,10 @@ import { getWaterIntakes } from '@/db/db';
 import { WaterIntake as WaterIntakeType } from '@/db/types';
 import { router, useFocusEffect } from 'expo-router';
 import { useCallback, useEffect, useState } from 'react';
-import { ScrollView, StyleSheet, View } from 'react-native';
+import { ScrollView, SectionList, StyleSheet, Text, View } from 'react-native';
 import ListItem from '@/components/ListItem';
 import Pill from '@/components/Pill';
+import { format } from 'date-fns';
 
 const filterOptions = [
     { value: 'today', label: 'Today' },
@@ -15,12 +16,26 @@ const filterOptions = [
 ];
 
 function WaterIntake() {
-    const [waterIntakes, setWaterIntakes] = useState<WaterIntakeType[]>([]);
+    const [groupedWaterIntakes, setGroupedWaterIntakes] = useState<{ date: string; data: WaterIntakeType[] }[]>([]);
     const [selectedFilter, setSelectedFilter] = useState('today');
 
     const getData = useCallback((filter: string) => {
         const data = getWaterIntakes(filter);
-        setWaterIntakes(data);
+        const groupedData = data.reduce((acc, intake) => {
+            const date = format(intake.timestamp, 'iii dd');
+            if (!acc[date]) {
+                acc[date] = [];
+            }
+            acc[date].push(intake);
+            return acc;
+        }, {} as { [key: string]: WaterIntakeType[] });
+
+        setGroupedWaterIntakes(
+            Object.keys(groupedData).map((date) => ({
+                date,
+                data: groupedData[date],
+            }))
+        );
     }, []);
 
     useFocusEffect(
@@ -45,32 +60,57 @@ function WaterIntake() {
                     />
                 ))}
             </ScrollView>
-            <ScrollView>
-                <View style={styles.wrapper}>
-                    {waterIntakes.map((intake) => (
+
+            <SectionList
+                sections={groupedWaterIntakes}
+                keyExtractor={(item, i) => i.toString()}
+                renderItem={({ item, index, section }) => (
+                    <View
+                        style={[
+                            styles.itemContainer,
+                            {
+                                marginLeft: selectedFilter !== 'today' ? 90 : 0,
+                                marginBottom: index === section.data.length - 1 ? 0 : 10,
+                            },
+                        ]}
+                    >
                         <ListItem
-                            key={intake.id}
-                            title={intake.amount}
-                            timestamp={intake.timestamp}
-                            onPress={() => router.navigate(`/editWaterIntake?id=${intake.id}`)}
+                            title={item.amount}
+                            timestamp={item.timestamp}
+                            onPress={() => router.navigate(`/editWaterIntake?id=${item.id}`)}
                         />
-                    ))}
-                </View>
-            </ScrollView>
+                    </View>
+                )}
+                renderSectionHeader={({ section: { date } }) =>
+                    selectedFilter !== 'today' ? (
+                        <View style={styles.dateHeader}>
+                            <Text style={styles.dateText}>{date}</Text>
+                        </View>
+                    ) : null
+                }
+                stickySectionHeadersEnabled
+            />
             <FloatingAction handlePress={() => router.navigate('/newWaterIntake')} />
         </View>
     );
 }
 
 const styles = StyleSheet.create({
+    itemContainer: {
+        marginBottom: 10,
+    },
+    dateHeader: {
+        width: 90,
+    },
+    dateText: {
+        fontSize: 18,
+        fontWeight: 'bold',
+        color: '#fff',
+        marginRight: 10,
+    },
     wrapper: {
         position: 'relative',
         flex: 1,
-    },
-    button: {
-        padding: 10,
-        borderRadius: 5,
-        margin: 10,
     },
     optionsWrapper: {
         flexGrow: 0,
