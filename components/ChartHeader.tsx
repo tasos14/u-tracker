@@ -1,7 +1,11 @@
-import { ThemedText } from '@/components/ThemedText';
-import { StyleSheet, View } from 'react-native';
+import { Theme } from '@/constants/theme';
+import { StyleSheet, Text, useColorScheme, View } from 'react-native';
 
 function ChartHeader() {
+    const colorScheme = useColorScheme() || 'light';
+
+    const color = Theme[colorScheme].colors.text;
+
     return (
         <View style={styles.chartHeaderWrapper}>
             <View style={styles.chartDetail}>
@@ -13,7 +17,7 @@ function ChartHeader() {
                         },
                     ]}
                 />
-                <ThemedText style={styles.chartItemType}>Water</ThemedText>
+                <Text style={[styles.chartItemType, { color }]}>Water</Text>
             </View>
             <View style={styles.chartDetail}>
                 <View
@@ -24,7 +28,7 @@ function ChartHeader() {
                         },
                     ]}
                 />
-                <ThemedText style={styles.chartItemType}>Cath</ThemedText>
+                <Text style={[styles.chartItemType, { color }]}>Cath</Text>
             </View>
             <View style={styles.chartDetail}>
                 <View
@@ -35,7 +39,7 @@ function ChartHeader() {
                         },
                     ]}
                 />
-                <ThemedText style={styles.chartItemType}>Loss</ThemedText>
+                <Text style={[styles.chartItemType, { color }]}>Loss</Text>
             </View>
         </View>
     );
