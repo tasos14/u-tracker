@@ -1,18 +1,20 @@
 import DateInput from '@/components/DateInput';
 import { Theme } from '@/constants/theme';
+import { AppThemeContext } from '@/context/themeContext';
 import { deleteWaterIntake, getWaterIntakeById, updateWaterIntake } from '@/db/db';
 import { router, useLocalSearchParams } from 'expo-router';
-import { useEffect, useState } from 'react';
-import { Pressable, StyleSheet, Text, TextInput, useColorScheme, View } from 'react-native';
+import { useContext, useEffect, useState } from 'react';
+import { Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
 
 export default function EditWaterIntake() {
     const { id } = useLocalSearchParams<{ id: string }>();
     const [amount, setAmount] = useState<string | undefined>();
     const [timestamp, setTimestamp] = useState<Date | undefined>();
-    const colorScheme = useColorScheme() || 'light';
-    const backgroundColor = Theme[colorScheme].colors.primary5;
-    const color = Theme[colorScheme].colors.text;
-    const notificationColor = Theme[colorScheme].colors.notification;
+    const { theme } = useContext(AppThemeContext);
+    const backgroundColor = Theme[theme].colors.primary5;
+    const color = Theme[theme].colors.text;
+    const notificationColor = Theme[theme].colors.notification;
+    const invertedColor = Theme[theme].colors.invertedColor;
 
     useEffect(() => {
         if (id) {
@@ -54,10 +56,10 @@ export default function EditWaterIntake() {
             <Text style={{ color }}>Timestamp</Text>
             <DateInput onChange={(date) => setTimestamp(date)} value={timestamp} />
             <Pressable onPress={onDeleteButtonPress} style={[styles.button, { backgroundColor: notificationColor }]}>
-                <Text style={styles.buttonText}>Delete</Text>
+                <Text style={[styles.buttonText, { color: invertedColor }]}>Delete</Text>
             </Pressable>
             <Pressable onPress={onSaveButtonPress} style={[styles.button, { backgroundColor }]}>
-                <Text style={styles.buttonText}>Save</Text>
+                <Text style={[styles.buttonText, { color: invertedColor }]}>Save</Text>
             </Pressable>
         </View>
     );
@@ -72,7 +74,6 @@ const styles = StyleSheet.create({
         marginTop: 10,
     },
     button: {
-        backgroundColor: '#fff',
         padding: 10,
         borderRadius: 5,
         marginTop: 30,
@@ -84,6 +85,5 @@ const styles = StyleSheet.create({
     buttonText: {
         textAlign: 'center',
         fontWeight: 'bold',
-        color: '#000',
     },
 });

@@ -2,12 +2,15 @@ import { Theme } from '@/constants/theme';
 import { Ionicons } from '@expo/vector-icons';
 import { BottomTabHeaderProps } from '@react-navigation/bottom-tabs';
 import { router } from 'expo-router';
-import { StyleSheet, useColorScheme, Text, Appearance } from 'react-native';
+import { StyleSheet, Text } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
-function TabHeader(props: BottomTabHeaderProps) {
-    const colorScheme = Appearance.getColorScheme() || 'light';
-    const color = Theme[colorScheme].colors.text;
+interface TabHeaderProps extends BottomTabHeaderProps {
+    theme: 'light' | 'dark';
+}
+
+function TabHeader(props: TabHeaderProps) {
+    const color = Theme[props.theme].colors.text;
 
     return (
         <SafeAreaView style={styles.wrapper}>
@@ -18,7 +21,7 @@ function TabHeader(props: BottomTabHeaderProps) {
                     style={styles.icon}
                     name="settings"
                     size={30}
-                    color="#fff"
+                    color={color}
                     onPress={() => router.navigate('/settings')}
                 />
             )}

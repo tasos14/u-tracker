@@ -1,10 +1,12 @@
 import { Theme } from '@/constants/theme';
-import { StyleSheet, Text, useColorScheme, View } from 'react-native';
+import { AppThemeContext } from '@/context/themeContext';
+import { useContext } from 'react';
+import { StyleSheet, Text, View } from 'react-native';
 
 function ChartHeader() {
-    const colorScheme = useColorScheme() || 'light';
+    const { theme } = useContext(AppThemeContext);
 
-    const color = Theme[colorScheme].colors.text;
+    const color = Theme[theme].colors.text;
 
     return (
         <View style={styles.chartHeaderWrapper}>

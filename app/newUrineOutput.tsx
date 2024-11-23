@@ -1,17 +1,19 @@
 import DateInput from '@/components/DateInput';
 import { Theme } from '@/constants/theme';
+import { AppThemeContext } from '@/context/themeContext';
 import { createUrineOutput } from '@/db/db';
 import { router } from 'expo-router';
-import { useState } from 'react';
-import { Pressable, StyleSheet, Text, TextInput, useColorScheme, View } from 'react-native';
+import { useContext, useState } from 'react';
+import { Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
 
 export default function NewWaterIntake() {
     const [lossAmount, setLossAmount] = useState<string | undefined>();
     const [catheterizedAmount, setCatheterizedAmount] = useState<string | undefined>();
     const [timestamp, setTimestamp] = useState<Date>(new Date());
-    const colorScheme = useColorScheme() || 'light';
-    const backgroundColor = Theme[colorScheme].colors.primary5;
-    const color = Theme[colorScheme].colors.text;
+    const { theme } = useContext(AppThemeContext);
+    const backgroundColor = Theme[theme].colors.primary5;
+    const color = Theme[theme].colors.text;
+    const invertedColor = Theme[theme].colors.invertedColor;
 
     const onCeateButtonPress = () => {
         createUrineOutput({
@@ -44,7 +46,7 @@ export default function NewWaterIntake() {
             <DateInput onChange={(date) => setTimestamp(date)} />
 
             <Pressable onPress={onCeateButtonPress} style={[styles.button, { backgroundColor }]}>
-                <Text style={styles.buttonText}>Create</Text>
+                <Text style={[styles.buttonText, { color: invertedColor }]}>Create</Text>
             </Pressable>
         </View>
     );
@@ -73,6 +75,5 @@ const styles = StyleSheet.create({
     buttonText: {
         textAlign: 'center',
         fontWeight: 'bold',
-        color: '#000',
     },
 });

@@ -1,8 +1,9 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useContext, useEffect, useRef, useState } from 'react';
 import { eachDayOfInterval, endOfMonth, format, getDate, startOfMonth } from 'date-fns';
 import DateTimePicker from '@react-native-community/datetimepicker';
-import { Pressable, ScrollView, StyleSheet, Text, TouchableOpacity, useColorScheme, View } from 'react-native';
+import { Pressable, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { Theme } from '@/constants/theme';
+import { AppThemeContext } from '@/context/themeContext';
 
 const getDaysOfCurrentMonth = (date: Date) => {
     const start = startOfMonth(date);
@@ -15,9 +16,9 @@ function MonthlyCalendar({ date, onChange }: { date: Date; onChange: (date: Date
     const scrollViewRef = useRef<ScrollView>(null);
     const days = getDaysOfCurrentMonth(date);
     const [scrollViewWidth, setScrollViewWidth] = useState(0);
-    const colorScheme = useColorScheme() || 'light';
+    const { theme } = useContext(AppThemeContext);
 
-    const color = Theme[colorScheme].colors.text;
+    const color = Theme[theme].colors.text;
 
     useEffect(() => {
         const selectedIndex = days.findIndex((day) => day.getDate() === getDate(date));
@@ -52,7 +53,7 @@ function MonthlyCalendar({ date, onChange }: { date: Date; onChange: (date: Date
                     const isSelected = day.getDate() === getDate(date);
                     return (
                         <TouchableOpacity onPress={() => onChange(day)} key={day.getDate()} style={[styles.day]}>
-                            <Text style={[styles.dayText, isSelected ? styles.selectedDayText : {}]}>
+                            <Text style={[styles.dayText, { color }, isSelected ? styles.selectedDayText : {}]}>
                                 {day.getDate()}
                             </Text>
                             <Text style={[styles.weekdayText, { color }, isSelected ? styles.selectedWeekDayText : {}]}>
@@ -87,7 +88,6 @@ const styles = StyleSheet.create({
         fontWeight: 'bold',
     },
     dayText: {
-        color: 'white',
         fontSize: 24,
         fontWeight: 400,
         opacity: 0.5,

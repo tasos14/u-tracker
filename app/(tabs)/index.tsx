@@ -2,20 +2,21 @@ import ChartHeader from '@/components/ChartHeader';
 import { Theme } from '@/constants/theme';
 import { getChartData, getDailySummary } from '@/db/db';
 import { useFocusEffect } from 'expo-router';
-import { useCallback, useEffect, useState } from 'react';
-import { ScrollView, StyleSheet, Text, useColorScheme, View } from 'react-native';
+import { useCallback, useContext, useEffect, useState } from 'react';
+import { ScrollView, StyleSheet, Text, View } from 'react-native';
 import { BarChart, PieChart } from 'react-native-gifted-charts';
 import MonthlyCalendar from '@/components/MonthlyCalendar';
+import { AppThemeContext } from '@/context/themeContext';
 
 export default function Index() {
     const [dailySummary, setDailySummary] = useState({ waterIntake: 0, urineLoss: 0, catheterized: 0 });
     const [chartData, setChartData] = useState<{ value: number; label: string; frontColor: string }[]>([]);
     const [totalChartData, setTotalChartData] = useState<{ value: number; label: string; frontColor: string }[]>([]);
     const [date, setDate] = useState(new Date());
-    const colorScheme = useColorScheme() || 'light';
+    const { theme } = useContext(AppThemeContext);
 
-    const color = Theme[colorScheme].colors.text;
-    const backgroundColor = Theme[colorScheme].colors.surface1;
+    const color = Theme[theme].colors.text;
+    const backgroundColor = Theme[theme].colors.surface1;
 
     const getData = useCallback((date: Date) => {
         const summary = getDailySummary(date);
@@ -60,8 +61,8 @@ export default function Index() {
                         isAnimated
                         roundedTop
                         showVerticalLines
-                        verticalLinesColor="rgba(211, 211, 211, 0.1)"
-                        rulesColor="rgba(211, 211, 211, 0.1)"
+                        verticalLinesColor={theme === 'dark' ? 'rgba(211, 211, 211, 0.1)' : 'rgba(0, 0, 0, 0.1)'}
+                        rulesColor={theme === 'dark' ? 'rgba(211, 211, 211, 0.1)' : 'rgba(0, 0, 0, 0.1)'}
                         rulesType="solid"
                         showGradient
                         stepValue={100}
@@ -86,8 +87,10 @@ export default function Index() {
                                 isAnimated
                                 roundedTop
                                 showVerticalLines
-                                verticalLinesColor="rgba(211, 211, 211, 0.1)"
-                                rulesColor="rgba(211, 211, 211, 0.1)"
+                                verticalLinesColor={
+                                    theme === 'dark' ? 'rgba(211, 211, 211, 0.1)' : 'rgba(0, 0, 0, 0.1)'
+                                }
+                                rulesColor={theme === 'dark' ? 'rgba(211, 211, 211, 0.1)' : 'rgba(0, 0, 0, 0.1)'}
                                 rulesType="solid"
                                 showGradient
                                 stepValue={500}

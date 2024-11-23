@@ -2,11 +2,13 @@ import FloatingAction from '@/components/FloatingAction';
 import { getWaterIntakes } from '@/db/db';
 import { WaterIntake as WaterIntakeType } from '@/db/types';
 import { router, useFocusEffect } from 'expo-router';
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useContext, useEffect, useState } from 'react';
 import { ScrollView, SectionList, StyleSheet, Text, View } from 'react-native';
 import ListItem from '@/components/ListItem';
 import Pill from '@/components/Pill';
 import { format } from 'date-fns';
+import { AppThemeContext } from '@/context/themeContext';
+import { Theme } from '@/constants/theme';
 
 const filterOptions = [
     { value: 'today', label: 'Today' },
@@ -18,6 +20,8 @@ const filterOptions = [
 function WaterIntake() {
     const [groupedWaterIntakes, setGroupedWaterIntakes] = useState<{ date: string; data: WaterIntakeType[] }[]>([]);
     const [selectedFilter, setSelectedFilter] = useState('today');
+    const { theme } = useContext(AppThemeContext);
+    const color = Theme[theme].colors.text;
 
     const getData = useCallback((filter: string) => {
         const data = getWaterIntakes(filter);
@@ -84,7 +88,7 @@ function WaterIntake() {
                 renderSectionHeader={({ section: { date } }) =>
                     selectedFilter !== 'today' ? (
                         <View style={styles.dateHeader}>
-                            <Text style={styles.dateText}>{date}</Text>
+                            <Text style={[styles.dateText, { color }]}>{date}</Text>
                         </View>
                     ) : null
                 }
@@ -105,7 +109,6 @@ const styles = StyleSheet.create({
     dateText: {
         fontSize: 18,
         fontWeight: 'bold',
-        color: '#fff',
         marginRight: 10,
     },
     wrapper: {

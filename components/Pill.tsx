@@ -1,13 +1,16 @@
-import { Pressable, StyleSheet, Text, useColorScheme } from 'react-native';
+import { Pressable, StyleSheet, Text } from 'react-native';
 import { Theme } from '@/constants/theme';
+import { AppThemeContext } from '@/context/themeContext';
+import { useContext } from 'react';
 
 function Pill({ label, isActive, onPress }: { label: string; isActive: boolean; onPress: () => void }) {
-    const colorScheme = useColorScheme() || 'light';
-    const backgroundColor = isActive ? '#fff' : Theme[colorScheme].colors.surface2;
+    const { theme } = useContext(AppThemeContext);
+    const backgroundColor = isActive ? Theme[theme].colors.primary5 : Theme[theme].colors.surface2;
+    const color = isActive ? Theme[theme].colors.invertedColor : Theme[theme].colors.text;
 
     return (
         <Pressable onPress={onPress} style={[styles.pill, { backgroundColor }]}>
-            <Text style={[styles.pillText, isActive && styles.activePillText]}>{label}</Text>
+            <Text style={[styles.pillText, { color }]}>{label}</Text>
         </Pressable>
     );
 }
@@ -23,9 +26,6 @@ const styles = StyleSheet.create({
         justifyContent: 'center',
         alignItems: 'center',
         color: '#fff',
-    },
-    activePillText: {
-        color: '#000',
     },
 });
 

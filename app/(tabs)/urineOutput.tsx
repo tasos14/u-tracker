@@ -1,11 +1,13 @@
 import FloatingAction from '@/components/FloatingAction';
 import ListItem from '@/components/ListItem';
 import Pill from '@/components/Pill';
+import { Theme } from '@/constants/theme';
+import { AppThemeContext } from '@/context/themeContext';
 import { getUrineOutputs } from '@/db/db';
 import { UrineOutput as UrineOutputType } from '@/db/types';
 import { format } from 'date-fns';
 import { router, useFocusEffect } from 'expo-router';
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useContext, useEffect, useState } from 'react';
 import { ScrollView, SectionList, StyleSheet, Text, View } from 'react-native';
 
 const timeFilterOptions = [
@@ -24,6 +26,8 @@ function UrineOutput() {
     const [groupedUrineOutputs, setGroupedUrineOutputs] = useState<{ date: string; data: UrineOutputType[] }[]>([]);
     const [selectedTimeFilter, setSelectedTimeFilter] = useState('today');
     const [selectedTypeFilter, setSelectedTypeFilter] = useState('catheterized');
+    const { theme } = useContext(AppThemeContext);
+    const color = Theme[theme].colors.text;
 
     const getData = useCallback((timeFilter: string, typeFilter: string) => {
         const data = getUrineOutputs(timeFilter, typeFilter);
@@ -101,7 +105,7 @@ function UrineOutput() {
                 renderSectionHeader={({ section: { date } }) =>
                     selectedTimeFilter !== 'today' ? (
                         <View style={styles.dateHeader}>
-                            <Text style={styles.dateText}>{date}</Text>
+                            <Text style={[styles.dateText, { color }]}>{date}</Text>
                         </View>
                     ) : null
                 }
@@ -126,7 +130,6 @@ const styles = StyleSheet.create({
     dateText: {
         fontSize: 18,
         fontWeight: 'bold',
-        color: '#fff',
         marginRight: 10,
     },
     button: {

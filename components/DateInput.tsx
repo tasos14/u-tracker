@@ -1,7 +1,8 @@
-import { ReactElement, useEffect, useState } from 'react';
-import { Pressable, StyleSheet, TextInput, useColorScheme, View } from 'react-native';
+import { ReactElement, useContext, useEffect, useState } from 'react';
+import { Pressable, StyleSheet, TextInput, View } from 'react-native';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import { Theme } from '@/constants/theme';
+import { AppThemeContext } from '@/context/themeContext';
 
 function DateInput({ value, onChange }: { value?: Date; onChange: (date: Date) => void }): ReactElement {
     const [date, setDate] = useState(value ? value : new Date());
@@ -9,9 +10,9 @@ function DateInput({ value, onChange }: { value?: Date; onChange: (date: Date) =
     const [showDate, setShowDate] = useState(false);
     const [showTime, setShowTime] = useState(false);
     const [combinedDate, setCombinedDate] = useState<Date | undefined>();
-    const colorScheme = useColorScheme() || 'light';
-    const color = Theme[colorScheme].colors.text;
-    const backgroundColor = Theme[colorScheme].colors.primary5;
+    const { theme } = useContext(AppThemeContext);
+    const color = Theme[theme].colors.text;
+    const backgroundColor = Theme[theme].colors.primary5;
 
     useEffect(() => {
         if (value) {

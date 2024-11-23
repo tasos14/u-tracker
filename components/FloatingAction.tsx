@@ -1,18 +1,20 @@
 import { Theme } from '@/constants/theme';
-import React from 'react';
-import { StyleSheet, View, Pressable, Text, useColorScheme } from 'react-native';
+import { AppThemeContext } from '@/context/themeContext';
+import React, { useContext } from 'react';
+import { StyleSheet, View, Pressable, Text } from 'react-native';
 
 type FloatingActionProps = {
     handlePress: () => void;
 };
 
 export default function FloatingAction({ handlePress }: FloatingActionProps) {
-    const colorScheme = useColorScheme() || 'light';
-    const backgroundColor = Theme[colorScheme].colors.primary5;
+    const { theme } = useContext(AppThemeContext);
+    const backgroundColor = Theme[theme].colors.primary5;
+    const color = Theme[theme].colors.invertedColor;
     return (
         <View style={[styles.buttonContainer]}>
             <Pressable onPress={handlePress} style={[styles.shadow, mainButtonStyles.button, { backgroundColor }]}>
-                <Text style={[mainButtonStyles.content]}>+</Text>
+                <Text style={[mainButtonStyles.content, { color }]}>+</Text>
             </Pressable>
         </View>
     );
@@ -30,7 +32,6 @@ const mainButtonStyles = StyleSheet.create({
     },
     content: {
         fontSize: 24,
-        color: '#000',
     },
 });
 
