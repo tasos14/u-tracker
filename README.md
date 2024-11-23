@@ -1,6 +1,7 @@
-# Welcome to your Expo app 👋
+# U-Tracker App
 
-This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
+U-Tracker is a React Native application built with Expo for tracking water intake and urine output. The app supports light and dark themes and allows users to export and import data in CSV format.
+
 
 ## Get started
 
