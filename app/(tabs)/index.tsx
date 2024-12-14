@@ -2,15 +2,16 @@ import ChartHeader from '@/components/ChartHeader';
 import { Theme } from '@/constants/theme';
 import { getChartData, getDailySummary } from '@/db/db';
 import { useFocusEffect } from 'expo-router';
-import { useCallback, useContext, useEffect, useState } from 'react';
+import { Fragment, useCallback, useContext, useEffect, useState } from 'react';
 import { ScrollView, StyleSheet, Text, View } from 'react-native';
-import { BarChart, PieChart } from 'react-native-gifted-charts';
+import { BarChart, LineChart, PieChart } from 'react-native-gifted-charts';
 import MonthlyCalendar from '@/components/MonthlyCalendar';
 import { AppThemeContext } from '@/context/themeContext';
 
 export default function Index() {
     const [dailySummary, setDailySummary] = useState({ waterIntake: 0, urineLoss: 0, catheterized: 0 });
     const [chartData, setChartData] = useState<{ value: number; label: string; frontColor: string }[]>([]);
+    const [lineChartData, setLineChartData] = useState<{ value: number; dataPointText: string }[]>([]);
     const [totalChartData, setTotalChartData] = useState<{ value: number; label: string; frontColor: string }[]>([]);
     const [date, setDate] = useState(new Date());
     const { theme } = useContext(AppThemeContext);
@@ -21,8 +22,9 @@ export default function Index() {
     const getData = useCallback((date: Date) => {
         const summary = getDailySummary(date);
         setDailySummary(summary);
-        const { chartData, totalChartData } = getChartData(date);
+        const { chartData, totalChartData, lineChartData } = getChartData(date);
         setChartData(chartData);
+        setLineChartData(lineChartData);
         setTotalChartData(totalChartData);
     }, []);
     useFocusEffect(
@@ -36,7 +38,7 @@ export default function Index() {
     }, [date, getData]);
 
     return (
-        <>
+        <Fragment>
             <MonthlyCalendar date={date} onChange={setDate} />
             <ScrollView>
                 <Text style={[styles.sectionTitle, { color }]}>Daily Summary</Text>
@@ -80,6 +82,36 @@ export default function Index() {
                 </View>
                 <View style={[styles.chartContainer, { backgroundColor }]}>
                     <ChartHeader />
+
+                    <LineChart
+                        data={lineChartData}
+                        areaChart
+                        endOpacity={0.1}
+                        startFillColor="#177AD5"
+                        endFillColor="#00BFFF"
+                        showVerticalLines
+                        verticalLinesColor={theme === 'dark' ? 'rgba(211, 211, 211, 0.1)' : 'rgba(0, 0, 0, 0.1)'}
+                        rulesColor={theme === 'dark' ? 'rgba(211, 211, 211, 0.1)' : 'rgba(0, 0, 0, 0.1)'}
+                        rulesType="solid"
+                        color="#177AD5"
+                        dataPointsColor1="#2dadd8"
+                        textColor1={color}
+                        xAxisColor={color}
+                        yAxisColor={color}
+                        hideYAxisText
+                        stepValue={350}
+                        xAxisLabelTextStyle={{
+                            color,
+                            transform: lineChartData.length > 0 ? 'rotate(50deg) translate(5px, 0)' : null,
+                        }}
+                        thickness={5}
+                        textShiftY={-8}
+                        textShiftX={-13}
+                        textFontSize={13}
+                    />
+                </View>
+                <View style={[styles.chartContainer, { backgroundColor }]}>
+                    <ChartHeader />
                     <View style={styles.doubleChartContainer}>
                         <View style={styles.chartWrapper}>
                             <BarChart
@@ -113,7 +145,7 @@ export default function Index() {
                     </View>
                 </View>
             </ScrollView>
-        </>
+        </Fragment>
     );
 }
 

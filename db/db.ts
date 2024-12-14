@@ -312,6 +312,7 @@ function getGradientColor(type: string): string {
 export function getChartData(date: Date): {
     chartData: { value: number; label: string; frontColor: string }[];
     totalChartData: { value: number; label: string; frontColor: string }[];
+    lineChartData: { value: number; dataPointText: string }[];
 } {
     const db = Database.getInstance();
     let waterIntake: { amount: number; timestamp: string }[] = [];
@@ -369,7 +370,22 @@ export function getChartData(date: Date): {
             gradientColor: getGradientColor(item.type),
         }));
 
-    return { chartData, totalChartData };
+    const lineChartData: { value: number; dataPointText: string }[] = waterIntake.reduce(
+        (acc, curr) => {
+            const lastValue = acc.length > 0 ? acc[acc.length - 1].value || 0 : 0;
+            return [
+                ...acc,
+                {
+                    value: lastValue + curr.amount,
+                    dataPointText: `${lastValue + curr.amount}`,
+                    label: format(new Date(curr.timestamp), 'HH:mm'),
+                },
+            ];
+        },
+        [{ value: 0, dataPointText: '0' }]
+    );
+
+    return { chartData, totalChartData, lineChartData };
 }
 
 // Export the singleton instance
