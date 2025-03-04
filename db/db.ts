@@ -85,21 +85,32 @@ export async function importDatabaseFromCSV(): Promise<void> {
         const db = Database.getInstance();
         db.withTransactionSync(() => {
             urineOutputs.forEach((row: any) => {
-                db.runSync(
-                    'INSERT OR REPLACE INTO urineOutput (urineLossAmount, catheterizedAmount, timestamp) VALUES (?, ?, ?, ?)',
-                    row.id,
-                    row.urineLossAmount,
-                    row.catheterizedAmount,
-                    row.timestamp
-                );
+                try {
+                    db.runSync(
+                        'INSERT OR REPLACE INTO urineOutput (id, urineLossAmount, catheterizedAmount, timestamp) VALUES (?, ?, ?, ?)',
+                        row.id,
+                        row.urineLossAmount,
+                        row.catheterizedAmount,
+                        row.timestamp
+                    );
+                    console.log('Inserted urine output');
+                } catch (error) {
+                    console.error('Error inserting urine output:', error);
+                }
             });
+
             waterIntakes.forEach((row: any) => {
-                db.runSync(
-                    'INSERT OR REPLACE INTO waterIntake (amount, timestamp) VALUES (?, ?, ?)',
-                    row.id,
-                    row.amount,
-                    row.timestamp
-                );
+                try {
+                    db.runSync(
+                        'INSERT OR REPLACE INTO waterIntake (id, amount, timestamp) VALUES (?, ?, ?)',
+                        row.id,
+                        row.amount,
+                        row.timestamp
+                    );
+                    console.log('Inserted water intake');
+                } catch (error) {
+                    console.error('Error inserting water intake:', error);
+                }
             });
         });
 

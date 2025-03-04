@@ -2,6 +2,8 @@ export interface WaterIntake {
     id: number;
     amount: number;
     timestamp: string;
+    createdAt?: string;
+    updatedAt?: string;
 }
 
 export interface UrineOutput {
@@ -9,4 +11,6 @@ export interface UrineOutput {
     urineLossAmount: number;
     catheterizedAmount: number;
     timestamp: string;
+    createdAt?: string;
+    updatedAt?: string;
 }

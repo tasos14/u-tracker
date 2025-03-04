@@ -15,7 +15,6 @@ export function useTheme(): { themeMode: string; theme: 'light' | 'dark'; setThe
     const [themeMode, setThemeMode] = useState<IAppThemeMode>(IAppThemeMode.auto);
     const SystemTheme = useColorScheme() ?? 'light';
     const [theme, setTheme] = useState<'light' | 'dark'>(SystemTheme);
-    console.log('SystemTheme', SystemTheme);
 
     if (themeMode === IAppThemeMode.auto) {
         Appearance.addChangeListener(({ colorScheme }) => {
